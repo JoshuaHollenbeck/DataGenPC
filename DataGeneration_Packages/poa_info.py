@@ -2,7 +2,7 @@ import random
 
 # POA information
 def generate_poa_chance():
-    if random.random() < 0.99:
+    if random.random() < 0.18:
         poa_num = 1
     else:
         poa_num = 0

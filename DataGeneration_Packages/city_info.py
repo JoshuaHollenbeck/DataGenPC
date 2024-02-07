@@ -46224,7 +46224,7 @@ def generate_zip_position_salary():
     zip_id = selected_location[5]
     min_salary = selected_position[3]
     max_salary = selected_position[4]
-    main_client_access = selected_position[5]
     salary = random.randint(min_salary, max_salary)
+    main_client_access = selected_position[5]
 
     return city, state_id, zip_id, selected_position[0], main_client_access, salary

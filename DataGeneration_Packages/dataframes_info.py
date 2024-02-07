@@ -184,8 +184,8 @@ def generate_acct_data(accounts_data, account_holders_data, beneficiaries_data, 
         df_beneficiary_info["bene_id"] = range(
             1, len(df_beneficiary_info) + 1)
 
-    for i in tqdm(range(1), desc=format_desc("Assigning poa_id to Account Info"), bar_format=bar_format):
-        df_account_info["poa_id"] = range(
+    for i in tqdm(range(1), desc=format_desc("Assigning acct_poa_id to Account Info"), bar_format=bar_format):
+        df_account_info["acct_poa_id"] = range(
             1, len(df_account_info) + 1)
 
     for i in tqdm(range(1), desc=format_desc("Assigning transaction_id to Account Transactions"), bar_format=bar_format):
@@ -309,7 +309,7 @@ def generate_acct_data(accounts_data, account_holders_data, beneficiaries_data, 
     ]].copy()
 
     df_acct_poa = df_account_info[[
-        "poa_id",
+        "acct_poa_id",
         "acct_id",
         "poa_cust_id",
         "poa_role",
@@ -322,9 +322,17 @@ def generate_acct_data(accounts_data, account_holders_data, beneficiaries_data, 
         df_acct_poa.dropna(subset=[
                            "poa_cust_id"], inplace=True)
 
-    for i in tqdm(range(1), desc=format_desc("Converting Power of Attorney Decimal to String"), bar_format=bar_format):
+    for i in tqdm(range(1), desc=format_desc("Converting Power of Attorney POA Role Decimal to String"), bar_format=bar_format):
         df_acct_poa['poa_role'] = df_acct_poa['poa_role'].astype(
             str).replace('\.0', "", regex=True)
+
+    for i in tqdm(range(1), desc=format_desc("Converting Power of Attorney Customer ID Decimal to String"), bar_format=bar_format):
+        df_acct_poa['poa_cust_id'] = df_acct_poa['poa_cust_id'].astype(
+            str).replace('\.0', "", regex=True)
+
+    for i in tqdm(range(1), desc=format_desc("Re-numbering Power of Attorney ID"), bar_format=bar_format):
+        df_acct_poa["acct_poa_id"] = range(
+            1, len(df_acct_poa) + 1)
 
     df_acct_restrict = df_account_info[[
         "acct_id",
@@ -537,6 +545,10 @@ def generate_emp_data(employees_data):
         "rep_id",
     ]].copy()
 
+    for i in tqdm(range(1), desc=format_desc("Dropping Empty Employee Rep ID Rows"), bar_format=bar_format):
+        df_emp_rep_id.dropna(subset=[
+                           "rep_id"], inplace=True)
+
     for i in tqdm(range(1), desc=format_desc("Assinging Salary ID"), bar_format=bar_format):
         df_employee_info["salary_id"] = range(
             1, len(df_employee_info) + 1)
@@ -559,7 +571,6 @@ def generate_emp_data(employees_data):
         "position_location_id",
         "start_date",
         "end_date",
-        "mc_access"
     ]].copy()
 
     for i in tqdm(range(1), desc=format_desc("Sorting Termination Info"), bar_format=bar_format):

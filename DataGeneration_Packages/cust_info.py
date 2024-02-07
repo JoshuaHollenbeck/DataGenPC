@@ -10,7 +10,7 @@ def generate_employment_status(generated_num):
 
 def generate_exp_date():
     exp_month = random.randint(1, 12)
-    exp_year = random.randint(2023, 2035)
+    exp_year = random.randint(2024, 2035)
     return f"{exp_month}/{exp_year}"
 
 def generate_id_types():

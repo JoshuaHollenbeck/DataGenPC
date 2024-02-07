@@ -26,8 +26,8 @@ def main():
     account_holders_data = []
 
     # Number of records to generate
-    cust_records = 1000
-    emp_records = 1000
+    cust_records = 100
+    emp_records = 352543
 
     # Generate custs
     for i in tqdm(range(cust_records), desc=dataframes_info.format_desc("Generating Customers"), bar_format=dataframes_info.bar_format):
@@ -91,8 +91,8 @@ def main():
             acct_status, closed_date_math)
 
         # Number of accts to create per customer
-        num_of_accts = 1
-        # random.randint(1, 5)
+        num_of_accts = random.randint(
+            1, 5)
 
         # Generate customer data
         customer_data = {
@@ -132,15 +132,14 @@ def main():
         # Generate account data
         for j in range(num_of_accts):
             # Generate acct type and acct type info
-            generate_acct_type = 1
-            # random.randint(
-            #     1, 19)
+            generate_acct_type = random.randint(
+                1, 19)
 
             acct_type_info = acct_info.get_acct_types(
                 generate_acct_type)
 
             acct_type_id, (acct_type_name,
-                        acct_type_abbr) = generate_acct_type, acct_type_info
+                           acct_type_abbr) = generate_acct_type, acct_type_info
 
             acct_num = acct_info.generate_acct_nums(
                 generate_acct_type)
@@ -300,7 +299,7 @@ def main():
 
         stock_info, final_acct_balances = transaction_info.generate_transactions(
             acct_num, acct_type, generated_dates, acct_bal_value)
-            
+
         transaction_info.holding_total(
             acct_num, acct_type, stock_info)
 
@@ -316,7 +315,9 @@ def main():
             termination_date_math)
         rehireable_result = emp_info.get_rehireable(
             termination_reason_result)
+
         emp_city, emp_state_id, emp_zip_id, position, main_client, salary = city_info.generate_zip_position_salary()
+
         emp_id = i + 1
         emp_secondary_id = i + 1
         is_emp = 1
@@ -363,6 +364,7 @@ def main():
         employees_data)
 
     dataframes_info.get_final_acct_bal()
+
 
 if __name__ == "__main__":
     main()
