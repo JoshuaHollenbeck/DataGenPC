@@ -177,7 +177,7 @@ def generate_acct_data(accounts_data, account_holders_data, beneficiaries_data, 
             1, len(df_account_info) + 1)
 
     for i in tqdm(range(1), desc=format_desc("Assigning bene_id to Account Info"), bar_format=bar_format):
-        df_beneficiary_info["bene_id"] = range(
+        df_beneficiary_info["acct_bene_id"] = range(
             1, len(df_beneficiary_info) + 1)
 
     for i in tqdm(range(1), desc=format_desc("Assigning acct_poa_id to Account Info"), bar_format=bar_format):
@@ -185,15 +185,15 @@ def generate_acct_data(accounts_data, account_holders_data, beneficiaries_data, 
             1, len(df_account_info) + 1)
 
     for i in tqdm(range(1), desc=format_desc("Assigning transaction_id to Account Transactions"), bar_format=bar_format):
-        df_transaction_info["transaction_id"] = range(
+        df_transaction_info["acct_transaction_id"] = range(
             1, len(df_transaction_info) + 1)
 
     for i in tqdm(range(1), desc=format_desc("Assigning trade_id to Account Trade"), bar_format=bar_format):
-        df_transaction_info["trade_id"] = range(
+        df_transaction_info["acct_trade_id"] = range(
             1, len(df_transaction_info) + 1)
 
     for i in tqdm(range(1), desc=format_desc("Assigning holding_id to Account Holding"), bar_format=bar_format):
-        df_holding_info["holding_id"] = range(
+        df_holding_info["acct_holding_id"] = range(
             1, len(df_holding_info) + 1)
 
     for acct_num, final_bal in tqdm(final_acct_balances.items(), desc=format_desc("Updating Account Balance"), bar_format=bar_format):
@@ -374,7 +374,7 @@ def generate_acct_data(accounts_data, account_holders_data, beneficiaries_data, 
 
     df_acct_trade = df_transaction_info[[
         "acct_trade_id",
-        "transaction_id",
+        "acct_transaction_id",
         "acct_num",
         "transaction_date",
         "transaction_type",
@@ -533,7 +533,7 @@ def generate_emp_data(employees_data):
 
     for i in tqdm(range(1), desc=format_desc("Dropping Empty Employee Password Rows"), bar_format=bar_format):
         df_emp_pass.dropna(subset=[
-                           "emp_pass"], inplace=True)
+                           "emp_password"], inplace=True)
 
     df_emp_tax = df_employee_info[[
         "emp_id",
@@ -547,10 +547,10 @@ def generate_emp_data(employees_data):
 
     for i in tqdm(range(1), desc=format_desc("Dropping Empty Employee Rep ID Rows"), bar_format=bar_format):
         df_emp_rep_id.dropna(subset=[
-                           "rep_id"], inplace=True)
+            "rep_id"], inplace=True)
 
     for i in tqdm(range(1), desc=format_desc("Assinging Salary ID"), bar_format=bar_format):
-        df_employee_info["salary_id"] = range(
+        df_employee_info["emp_salary_id"] = range(
             1, len(df_employee_info) + 1)
 
     df_emp_salary = df_employee_info[[
@@ -578,7 +578,7 @@ def generate_emp_data(employees_data):
             "termination_date")
 
     for i in tqdm(range(1), desc=format_desc("Assigning Employee Termindation ID"), bar_format=bar_format):
-        df_employee_info["termination_id"] = range(
+        df_employee_info["emp_termination_id"] = range(
             1, len(df_employee_info) + 1)
 
     df_emp_termination = df_employee_info[[
@@ -626,46 +626,81 @@ def generate_emp_data(employees_data):
 def get_final_acct_bal():
     for i in tqdm(range(1), desc=format_desc("Getting Account Final Balance"), bar_format=bar_format):
         # Load transactions data
-        transactions_df = pd.read_csv('CSV_Files/acct_transaction.csv')
+        transactions_df = pd.read_csv(
+            'CSV_Files/acct_transaction.csv')
 
         # Convert transaction_date to datetime to ensure proper sorting
-        transactions_df['transaction_date'] = pd.to_datetime(transactions_df['transaction_date'])
+        transactions_df['transaction_date'] = pd.to_datetime(
+            transactions_df['transaction_date'])
 
         # Sort transactions by acct_id and transaction_date, then drop duplicates to keep the last transaction per acct_id
-        last_transactions_df = transactions_df.sort_values(by=['acct_id', 'transaction_date']).drop_duplicates('acct_id', keep='last')
+        last_transactions_df = transactions_df.sort_values(
+            by=['acct_id', 'transaction_date']).drop_duplicates('acct_id', keep='last')
 
         # Load account balances data
-        acct_bal_df = pd.read_csv('CSV_Files/acct_bal.csv')
+        acct_bal_df = pd.read_csv(
+            'CSV_Files/acct_bal.csv')
 
         # Update acct_bal in acct_bal_df with post_bal from the corresponding last transaction
         for acct_id in last_transactions_df['acct_id']:
-            post_bal = last_transactions_df[last_transactions_df['acct_id'] == acct_id]['post_bal'].values[0]
-            acct_bal_df.loc[acct_bal_df['acct_id'] == acct_id, 'acct_bal'] = post_bal
+            post_bal = last_transactions_df[last_transactions_df['acct_id']
+                                            == acct_id]['post_bal'].values[0]
+            acct_bal_df.loc[acct_bal_df['acct_id']
+                            == acct_id, 'acct_bal'] = post_bal
 
         # Overwrite the existing acct_bal.csv with the updated account balances
-        acct_bal_df.to_csv('CSV_Files/acct_bal.csv', index=False)
+        acct_bal_df.to_csv(
+            'CSV_Files/acct_bal.csv', index=False)
 
 def get_cust_id_for_acct_info():
     for i in tqdm(range(1), desc=format_desc("Getting Customer ID For Account Info"), bar_format=bar_format):
         # Load the data
-        df_cust_info = pd.read_csv('CSV_Files/cust_info.csv')
-        df_acct_info = pd.read_csv('CSV_Files/acct_info.csv')
+        df_cust_info = pd.read_csv(
+            'CSV_Files/cust_info.csv')
+        df_acct_info = pd.read_csv(
+            'CSV_Files/acct_info.csv')
 
         # Merge the DataFrames
         df_merged = df_acct_info.merge(df_cust_info[['cust_id', 'cust_secondary_id']],
-                                    on='cust_secondary_id', 
-                                    how='left')
+                                       on='cust_secondary_id',
+                                       how='left')
 
         # Define the new order of columns, placing 'cust_id' right after 'acct_id'
-        new_order = ['acct_id', 'cust_id'] + [col for col in df_merged.columns if col not in ['acct_id', 'cust_id']]
+        new_order = ['acct_id', 'cust_id'] + \
+            [col for col in df_merged.columns if col not in [
+                'acct_id', 'cust_id']]
 
         # Reorder the DataFrame according to the new column order
         df_merged = df_merged[new_order]
 
         # Optional: Drop the 'cust_secondary_id' column
-        df_merged.drop('cust_secondary_id', axis=1, inplace=True)
+        df_merged.drop(
+            'cust_secondary_id', axis=1, inplace=True)
 
         # Overwrite the acct_info.csv file with the updated DataFrame
-        df_merged.to_csv('CSV_Files/acct_info.csv', index=False)    
-    
-    print("Data generation complete!")
+        df_merged.to_csv(
+            'CSV_Files/acct_info.csv', index=False)
+
+def remove_empty_trade():
+    for i in tqdm(range(1), desc=format_desc("Getting Customer ID For Account Info"), bar_format=bar_format):
+        # Load the data
+        df_trade_info = pd.read_csv(
+            'CSV_Files/acct_trade.csv')
+
+        # Filter the DataFrame to keep only rows with 'transaction_type' 3 or 4, and create a copy
+        df_filtered = df_trade_info[df_trade_info['transaction_type'].isin([
+                                                                           3, 4])].copy()
+
+        # Reset the index (optional, if you want a clean index)
+        df_filtered.reset_index(
+            drop=True, inplace=True)
+
+        # Renumber 'acct_trade_id' starting from 1
+        df_filtered['acct_trade_id'] = df_filtered.index + 1
+
+        # Save the filtered DataFrame
+        df_filtered.to_csv(
+            'CSV_Files/acct_trade.csv', index=False)
+
+    print(
+        "Data generation complete!")

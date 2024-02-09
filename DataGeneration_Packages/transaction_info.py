@@ -25,9 +25,8 @@ def get_transaction_types(transaction_type):
 
 def generate_transaction_dates(cust_since, closed_date):
     generated_dates = []
-    num_transactions = 100
-    # random.randint(
-    #     100, 5000)
+    num_transactions = random.randint(
+        100, 5000)
 
     # Generate range of dates
     for i in range(num_transactions):

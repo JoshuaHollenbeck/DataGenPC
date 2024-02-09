@@ -27,7 +27,7 @@ def main():
 
     # Number of records to generate
     cust_records = 10
-    emp_records = 1
+    emp_records = 50
 
     # Generate custs
     for i in tqdm(range(cust_records), desc=dataframes_info.format_desc("Generating Customers"), bar_format=dataframes_info.bar_format):
@@ -91,9 +91,8 @@ def main():
             acct_status, closed_date_math)
 
         # Number of accts to create per customer
-        num_of_accts = 2
-        # random.randint(
-        #     1, 5)
+        num_of_accts = random.randint(
+            1, 5)
 
         # Generate customer data
         customer_data = {
@@ -174,7 +173,7 @@ def main():
                 "contact_zip": zip_id,
                 "jurisdiction_country": acct_info.generate_jurisdiction_country(),
                 "jurisdiction_state": state_id,
-                "acct_pass": faker_info.generate_acct_pass(),
+                "acct_password": faker_info.generate_acct_pass(),
                 "poa_cust_id": cust_info.generate_secondary_id(poa_num),
                 "poa_role": poa_info.generate_poa_role(poa_num),
                 "poa_first_name": faker_info.generate_poa_first_name(poa_num),
@@ -350,7 +349,7 @@ def main():
             "end_date": termination_date_math,
             "reason": termination_reason_result,
             "rehireable": rehireable_result,
-            "emp_pass": faker_info.generate_emp_pass(main_client)
+            "emp_password": faker_info.generate_emp_pass(main_client)
         }
         employees_data.append(
             employee_data)
@@ -367,6 +366,8 @@ def main():
     dataframes_info.get_final_acct_bal()
 
     dataframes_info.get_cust_id_for_acct_info()
+
+    dataframes_info.remove_empty_trade()
 
 
 if __name__ == "__main__":
