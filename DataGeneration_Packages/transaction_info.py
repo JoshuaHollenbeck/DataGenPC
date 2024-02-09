@@ -25,8 +25,9 @@ def get_transaction_types(transaction_type):
 
 def generate_transaction_dates(cust_since, closed_date):
     generated_dates = []
-    num_transactions = random.randint(
-        100, 5000)
+    num_transactions = 100
+    # random.randint(
+    #     100, 5000)
 
     # Generate range of dates
     for i in range(num_transactions):
@@ -43,7 +44,7 @@ def generate_transaction_dates(cust_since, closed_date):
 
 def get_transaction_details(acct_type):
     ira_transaction_type_list = [
-        3, 4]
+        1, 3, 4]
     brokerage_transaction_type_list = [
         1, 2, 3, 4, 5, 6, 7, 9, 10, 11]
     checking_transaction_type_list = [
@@ -53,7 +54,7 @@ def get_transaction_details(acct_type):
 
     if acct_type in [1, 2, 3, 4, 5, 6, 7]:
         type_list = ira_transaction_type_list
-        amt_min, amt_max = 50.00, 5000.00
+        amt_min, amt_max = 50.00, 1000.00
 
     elif acct_type in [8, 9, 10, 11, 12, 13, 14, 15]:
         type_list = brokerage_transaction_type_list
@@ -79,6 +80,24 @@ def generate_transactions(acct_num, acct_type, generated_dates, acct_bal_value):
     stock_info = {}
     final_acct_balances = {}
 
+    # Start with a positive initial balance if the current balance is 0.
+    # Ensure the first transaction is a deposit (type 1).
+    if acct_bal_value == 0:
+        initial_deposit = round(random.uniform(2500.00, 5000.00), 4)
+        temp_transactions.append({
+            "acct_num": acct_num,
+            "acct_type": acct_type,
+            "transaction_type": 1,
+            "transaction_amt": initial_deposit,
+            "transaction_date": generated_dates[0].strftime("%Y-%m-%d"),
+            "pre_bal": acct_bal_value,
+            "post_bal": initial_deposit,
+            "rep_id": None
+        })
+        acct_bal_value += initial_deposit  # Update the account balance to reflect the deposit.
+    
+    running_balance = acct_bal_value  # Update the running balance to reflect the initial deposit.
+    
     for transaction_date in generated_dates:
         trade_status = "5"
         trade_fees = "00.00"
@@ -293,22 +312,25 @@ def generate_transactions(acct_num, acct_type, generated_dates, acct_bal_value):
                 transaction_data)
 
     # First loop for preprocessing transactions based on running_balance
-    running_balance = acct_bal_value
     for transaction in temp_transactions:
         transaction_type = transaction["transaction_type"]
         transaction_amt = transaction["transaction_amt"]
         acct_num = transaction["acct_num"]
-
+        
         if running_balance <= 1000:
             transaction["transaction_type"] = 1
             transaction_amt = round(
-                random.uniform(1000.00, 5000.00), 4)
+                random.uniform(2500.00, 5000.00), 4)
             transaction["transaction_amt"] = transaction_amt
+        
+        transaction['pre_bal'] = running_balance
 
-        if transaction["transaction_type"] in [1, 4]:
+        if transaction_type in [1, 4]:    
             running_balance += transaction_amt
         else:
             running_balance -= transaction_amt
+
+        transaction['post_bal'] = running_balance
 
     # Second loop for actually processing transactions
     for transaction in temp_transactions:
@@ -323,6 +345,17 @@ def generate_transactions(acct_num, acct_type, generated_dates, acct_bal_value):
             acct_bal_value += transaction_amt
         else:
             acct_bal_value -= transaction_amt
+
+         # Set stock trade-related fields to None for non-trade transactions
+        if transaction_type not in [3, 4]:  # Assuming 3 and 4 are valid trade types
+            transaction["stock_exchange"] = None
+            transaction["stock_id"] = None
+            transaction["trade_quantity"] = None
+            transaction["trade_price"] = None
+            transaction["trade_amount"] = None
+            transaction["trade_status"] = None
+            transaction["trade_fees"] = None
+            transaction["currency"] = None
 
         # Proceed with setting transaction and balance details
         final_acct_balances[acct_num] = round(

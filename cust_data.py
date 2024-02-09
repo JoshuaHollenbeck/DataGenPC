@@ -26,8 +26,8 @@ def main():
     account_holders_data = []
 
     # Number of records to generate
-    cust_records = 100
-    emp_records = 352543
+    cust_records = 10
+    emp_records = 1
 
     # Generate custs
     for i in tqdm(range(cust_records), desc=dataframes_info.format_desc("Generating Customers"), bar_format=dataframes_info.bar_format):
@@ -91,8 +91,9 @@ def main():
             acct_status, closed_date_math)
 
         # Number of accts to create per customer
-        num_of_accts = random.randint(
-            1, 5)
+        num_of_accts = 2
+        # random.randint(
+        #     1, 5)
 
         # Generate customer data
         customer_data = {
@@ -364,6 +365,8 @@ def main():
         employees_data)
 
     dataframes_info.get_final_acct_bal()
+
+    dataframes_info.get_cust_id_for_acct_info()
 
 
 if __name__ == "__main__":

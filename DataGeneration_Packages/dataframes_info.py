@@ -4,12 +4,12 @@ import pandas as pd
 import os
 
 # tqdm Customization
-def format_desc(text, length=55):
+def format_desc(text, length=65):
     return f"{text:.<{length}}"
 
 
 # Show bar when generating data
-bar_format = "{desc:<55}: {percentage:3.0f}%|{bar:100}| {n_fmt}/{total_fmt} | [{remaining}]"
+bar_format = "{desc:<65}: {percentage:3.0f}%|{bar:100}| {n_fmt}/{total_fmt} | [{remaining}]"
 
 # Function to save a DataFrame to a CSV file in a specified folder
 def save_dataframe(df, filename, folder_path):
@@ -160,10 +160,6 @@ def generate_acct_data(accounts_data, account_holders_data, beneficiaries_data, 
         df_beneficiary_info = df_beneficiary_info.sort_values(
             "client_since")
 
-    # for i in tqdm(range(1), desc=format_desc("Sorting Transaction Info"), bar_format=bar_format):
-    #     df_transaction_info = df_transaction_info.sort_values(
-    #         "transaction_date")
-
     for i in tqdm(range(1), desc=format_desc("Sorting Trade Info"), bar_format=bar_format):
         df_transaction_info = df_transaction_info.sort_values(
             "transaction_date")
@@ -210,7 +206,7 @@ def generate_acct_data(accounts_data, account_holders_data, beneficiaries_data, 
     ]].copy()
 
     df_acct_bene = df_beneficiary_info[[
-        "bene_id",
+        "acct_bene_id",
         "acct_num",
         "bene_cust_id",
         "bene_first_name",
@@ -281,12 +277,12 @@ def generate_acct_data(accounts_data, account_holders_data, beneficiaries_data, 
         "acct_funding",
         "acct_purpose",
         "acct_activity",
-        "cust_id",
+        "cust_secondary_id",
         "acct_nickname",
         "client_since",
         "acct_status",
         "closed_date",
-        "rep_id"
+        "rep_id",
     ]].copy()
 
     df_acct_jurisdiction = df_account_info[[
@@ -305,7 +301,7 @@ def generate_acct_data(accounts_data, account_holders_data, beneficiaries_data, 
 
     df_acct_pass = df_account_info[[
         "acct_id",
-        "acct_pass"
+        "acct_password"
     ]].copy()
 
     df_acct_poa = df_account_info[[
@@ -361,7 +357,7 @@ def generate_acct_data(accounts_data, account_holders_data, beneficiaries_data, 
     ]].copy()
 
     df_acct_transaction = df_transaction_info[[
-        "transaction_id",
+        "acct_transaction_id",
         "acct_num",
         "transaction_type",
         "transaction_amt",
@@ -377,7 +373,7 @@ def generate_acct_data(accounts_data, account_holders_data, beneficiaries_data, 
     ]].copy()
 
     df_acct_trade = df_transaction_info[[
-        "trade_id",
+        "acct_trade_id",
         "transaction_id",
         "acct_num",
         "transaction_date",
@@ -392,7 +388,7 @@ def generate_acct_data(accounts_data, account_holders_data, beneficiaries_data, 
     ]].copy()
 
     df_acct_holding = df_holding_info[[
-        "holding_id",
+        "acct_holding_id",
         "acct_num",
         "stock_id",
         "quantity",
@@ -428,6 +424,10 @@ def generate_acct_data(accounts_data, account_holders_data, beneficiaries_data, 
 
     df_acct_trade = df_acct_trade.rename(
         columns={'acct_num': 'acct_id'})
+
+    for i in tqdm(range(1), desc=format_desc("Dropping Empty Account Trade Rows"), bar_format=bar_format):
+        df_acct_trade.drop(
+            df_acct_trade[df_acct_trade['stock_id'] < 0].index, inplace=True)
 
     stock_holdings_dict = {}
 
@@ -528,7 +528,7 @@ def generate_emp_data(employees_data):
 
     df_emp_pass = df_employee_info[[
         "emp_id",
-        "emp_pass"
+        "emp_password"
     ]].copy()
 
     for i in tqdm(range(1), desc=format_desc("Dropping Empty Employee Password Rows"), bar_format=bar_format):
@@ -554,7 +554,7 @@ def generate_emp_data(employees_data):
             1, len(df_employee_info) + 1)
 
     df_emp_salary = df_employee_info[[
-        "salary_id",
+        "emp_salary_id",
         "emp_id",
         "effective_date",
         "end_date",
@@ -582,7 +582,7 @@ def generate_emp_data(employees_data):
             1, len(df_employee_info) + 1)
 
     df_emp_termination = df_employee_info[[
-        "termination_id",
+        "emp_termination_id",
         "emp_id",
         "termination_date",
         "reason",
@@ -645,4 +645,27 @@ def get_final_acct_bal():
         # Overwrite the existing acct_bal.csv with the updated account balances
         acct_bal_df.to_csv('CSV_Files/acct_bal.csv', index=False)
 
+def get_cust_id_for_acct_info():
+    for i in tqdm(range(1), desc=format_desc("Getting Customer ID For Account Info"), bar_format=bar_format):
+        # Load the data
+        df_cust_info = pd.read_csv('CSV_Files/cust_info.csv')
+        df_acct_info = pd.read_csv('CSV_Files/acct_info.csv')
+
+        # Merge the DataFrames
+        df_merged = df_acct_info.merge(df_cust_info[['cust_id', 'cust_secondary_id']],
+                                    on='cust_secondary_id', 
+                                    how='left')
+
+        # Define the new order of columns, placing 'cust_id' right after 'acct_id'
+        new_order = ['acct_id', 'cust_id'] + [col for col in df_merged.columns if col not in ['acct_id', 'cust_id']]
+
+        # Reorder the DataFrame according to the new column order
+        df_merged = df_merged[new_order]
+
+        # Optional: Drop the 'cust_secondary_id' column
+        df_merged.drop('cust_secondary_id', axis=1, inplace=True)
+
+        # Overwrite the acct_info.csv file with the updated DataFrame
+        df_merged.to_csv('CSV_Files/acct_info.csv', index=False)    
+    
     print("Data generation complete!")
